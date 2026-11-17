@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: cek-plagiarisme-copyleaks
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /healthz
+    envVars:
+      - key: APP_USERNAME
+        sync: false
+      - key: APP_PASSWORD
+        sync: false
+      - key: COPYLEAKS_EMAIL
+        sync: false
+      - key: COPYLEAKS_KEY
+        sync: false
+      - key: COPYLEAKS_SANDBOX
+        value: "true"
+      - key: WEBHOOK_SECRET
+        generateValue: true
