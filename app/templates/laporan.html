@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8">
+<style>
+ body{font-family:"DejaVu Sans",Helvetica,Arial,sans-serif;font-size:10.5pt;line-height:1.5;color:#222}
+ h1{font-size:18pt;margin:0} .meta{color:#666;font-size:9pt}
+ .score{font-size:34pt;font-weight:bold;color:{% if score>=25 %}#c0392b{% elif score>=15 %}#e67e22{% else %}#27ae60{% endif %}}
+ .note{background:#f4f4f4;padding:8px;font-size:9pt;margin:12px 0}
+ .warn{background:#fdecea;padding:8px;font-size:9pt;margin:12px 0}
+ table{border-collapse:collapse;width:100%;font-size:9pt} td,th{border:1px solid #ccc;padding:4px;vertical-align:top;word-break:break-all;text-align:left}
+</style></head><body>
+<h1>Laporan Kemiripan Teks</h1>
+<p class="meta">{{ filename }} · {{ date }} · {{ total }} kata</p>
+<div class="score">{{ score }}%</div>
+{% if sandbox %}<div class="warn"><b>MODE SANDBOX:</b> hasil di bawah adalah data tiruan untuk uji integrasi, bukan hasil pengecekan sebenarnya.</div>{% endif %}
+<div class="note"><b>Bukan laporan Turnitin.</b> Dicek dengan Copyleaks. Hasil hanya indikasi awal, bukan vonis plagiarisme.</div>
+<h2>Sumber yang mirip</h2>
+{% if sources %}
+<table><tr><th>#</th><th>Sumber</th><th>Kata cocok</th><th>%</th></tr>
+{% for s in sources %}<tr><td>{{ loop.index }}</td><td><b>{{ s.title }}</b><br>{{ s.url }}</td><td>{{ s.words }}</td><td>{{ s.pct }}</td></tr>{% endfor %}
+</table>
+{% else %}<p>Tidak ada kecocokan ditemukan.</p>{% endif %}
+</body></html>
