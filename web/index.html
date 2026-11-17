@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cek Plagiarisme</title>
+<style>
+ body{font-family:system-ui,sans-serif;max-width:520px;margin:40px auto;padding:0 16px;color:#222}
+ #drop{border:2px dashed #999;border-radius:12px;padding:40px 16px;text-align:center;cursor:pointer}
+ #drop.over{background:#eef}
+ button{margin-top:16px;width:100%;padding:12px;font-size:16px;border:0;border-radius:8px;background:#2563eb;color:#fff}
+ button:disabled{background:#999}
+ progress{width:100%;margin-top:16px;display:none} #msg{margin-top:12px;font-size:14px}
+ small{color:#666}
+</style></head><body>
+<h2>Cek Plagiarisme</h2>
+<div id="drop">Tarik file .docx / .pdf ke sini<br>atau ketuk untuk pilih<input id="f" type="file" accept=".docx,.pdf" hidden></div>
+<div id="msg"></div>
+<progress id="bar" max="100" value="0"></progress>
+<button id="go" disabled>Cek</button>
+<p><small>File dikirim ke Copyleaks untuk dipindai (retensi scan diatur 1 jam). Laporan sementara ada di server maksimal 2 jam. Bukan laporan Turnitin.</small></p>
+<script>
+const $=id=>document.getElementById(id);let file=null;
+const pick=f=>{file=f;$('msg').textContent=f?f.name:'';$('go').disabled=!f};
+$('drop').onclick=()=>$('f').click();
+$('f').onchange=e=>pick(e.target.files[0]);
+$('drop').ondragover=e=>{e.preventDefault();$('drop').classList.add('over')};
+$('drop').ondragleave=()=>$('drop').classList.remove('over');
+$('drop').ondrop=e=>{e.preventDefault();$('drop').classList.remove('over');pick(e.dataTransfer.files[0])};
+$('go').onclick=async()=>{
+  $('go').disabled=true;$('bar').style.display='block';$('bar').removeAttribute('value');$('msg').textContent='Mengunggah...';
+  const fd=new FormData();fd.append('file',file);
+  const r=await fetch('/api/cek',{method:'POST',body:fd});
+  if(!r.ok){$('msg').textContent=(await r.json()).detail||'Gagal';$('go').disabled=false;return}
+  const {id}=await r.json();
+  const t=setInterval(async()=>{
+    const sr=await fetch('/api/status/'+id);if(!sr.ok){clearInterval(t);$('msg').textContent='Job kedaluwarsa, coba lagi';$('go').disabled=false;return}const s=await sr.json();
+    $('bar').removeAttribute('value');$('msg').textContent='Memeriksa... (bisa 1-3 menit)';
+    if(s.status===undefined||s.error){} if(s.status==='error'){clearInterval(t);$('msg').textContent='Error: '+s.error;$('go').disabled=false}
+    if(s.status==='done'){clearInterval(t);
+      const b=await (await fetch('/api/hasil/'+id)).blob();
+      const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='laporan-plagiarisme.pdf';a.click();
+      $('msg').textContent='Selesai, PDF terunduh.';$('go').disabled=false}
+  },1500);
+};
+</script></body></html>
